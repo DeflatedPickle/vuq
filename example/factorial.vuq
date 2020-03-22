@@ -14,7 +14,7 @@
 `   ,,         2.4. Refers to G
 `   *          2.5. Multiplies the first value by the second
 `   ,          2.6. Refers to I
-`              2.7. Space exists to separate variables
+`   _          2.7. Separate variables
 `   ,          2.8. See #2.5
 `]             2.9. Ends the block
 

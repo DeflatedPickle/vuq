@@ -5,7 +5,7 @@ start: rule_block*;
 // [ ]
 rule_block: '[' rule_match '\\' func ']';
 // g=1
-rule_match: obj=CHAR EQUALS value=param;
+rule_match: obj=CHAR compare value=param;
 // -g>
 // -i,g>
 func: '-' CHAR (',' CHAR)* '>' (arith SPACE?)* ('<' '-')?;
@@ -13,12 +13,14 @@ func: '-' CHAR (',' CHAR)* '>' (arith SPACE?)* ('<' '-')?;
 // -
 // *
 // /
-arith: first=var op second=param;
-param: INT | CHAR | var;
+arith: first=var arithOp second=param;
+compare: NOT? LESS? EQUALS (boolOp compare)?;
+boolOp: AND | OR;
 
-op: arg=(PLUS | MINUS | MULTIPLY | DIVIDE);
+arithOp: arg=(PLUS | MINUS | MULTIPLY | DIVIDE);
 
 var: ','+;
+param: INT | CHAR | var;
 
 COMMENT: GRAVE ~[\r\n]* -> skip;
 fragment GRAVE: '`';

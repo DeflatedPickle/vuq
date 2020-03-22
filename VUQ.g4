@@ -5,7 +5,7 @@ start: rule_block*;
 // [ ]
 rule_block: '[' rule_match '\\' func ']';
 // g=1
-rule_match: CHAR EQUALS param;
+rule_match: obj=CHAR EQUALS value=param;
 // -g>
 // -i,g>
 func: '-' CHAR (',' CHAR)* '>' (arith SPACE?)* ('<' '-')?;

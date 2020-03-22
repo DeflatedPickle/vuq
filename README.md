@@ -36,7 +36,7 @@ Parameters are referred to with commas, the amount matching their index.
    ,,      `  2.3. Refers to G
    *       `  2.4. Multiplies the first value by the second
    ,       `  2.5. Refers to I
-           `  2.6. Space exists to separate variables
+   _       `  2.6. Underscore exists to separate variables
    ,       `  2.7. See #2.5
 ]          `  2.8. Ends the rule block
 ```

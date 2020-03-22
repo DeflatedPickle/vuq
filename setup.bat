@@ -1,0 +1,1 @@
+antlr4 -Dlanguage=Python3 VUQ.g4 -o src/gen

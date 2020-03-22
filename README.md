@@ -24,7 +24,7 @@ Parameters are referred to with commas, the amount matching their index.
 ```
 [          `1. Begins a rule block
    g=1     `  1.1. Requires the variable G to equal 1 to exit the block
-   |       `  1.2. Ends the rule
+   \       `  1.2. Ends the rule
    -g>     `  1.3. Sets the blocks function, taking in G
    ,       `  1.4. Refers to G
    +1      `  1.5. Adds 1 to G
@@ -36,7 +36,7 @@ Parameters are referred to with commas, the amount matching their index.
    ,,      `  2.3. Refers to G
    *       `  2.4. Multiplies the first value by the second
    ,       `  2.5. Refers to I
-   _       `  2.6. Underscore exists to separate variables
+   _       `  2.6. Separate variables
    ,       `  2.7. See #2.5
 ]          `  2.8. Ends the rule block
 ```

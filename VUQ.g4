@@ -40,4 +40,4 @@ INT: [0-9]+;
 
 SPACE: '_';
 
-WS: [\t\r\n\f]+ -> skip;
+WS: [ \t\r\n\f]+ -> skip;

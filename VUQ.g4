@@ -15,7 +15,7 @@ func_block: (arith SPACE?)*;
 // *
 // /
 arith: first=var arithOp second=param;
-compare: NOT? LESS? EQUALS (boolOp compare)?;
+compare: NOT? LESS? EQUALS? /* (boolOp compare)? */;
 boolOp: AND | OR;
 
 arithOp: arg=(PLUS | MINUS | MULTIPLY | DIVIDE);

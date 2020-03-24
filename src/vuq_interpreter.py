@@ -1,4 +1,6 @@
-from .gen.VUQListener import VUQListener, ParseTreeWalker
+import textwrap
+
+from .gen.VUQListener import VUQListener
 from .gen.VUQParser import VUQParser
 
 
@@ -12,7 +14,7 @@ class VUQInterpreter(VUQListener):
         # Wiped between rules
         self.func_params = []
         # TODO: Support different comparisons and multiple rules
-        self.rule = []
+        self.rule = init_rule()
 
     def enterRule_block(self, ctx: VUQParser.Rule_blockContext):
         print(f"Rule Block: {ctx.getText()}")
@@ -23,8 +25,9 @@ class VUQInterpreter(VUQListener):
         if name not in self.var_dict:
             self.var_dict[name] = 0
 
-        self.rule.append(name)
-        self.rule.append(int(ctx.value.getText()))
+        self.rule["fst"] = name
+        self.rule["cmp"] = ctx.compare()
+        self.rule["snd"] = int(ctx.value.getText())
 
     def enterFunc(self, ctx: VUQParser.FuncContext):
         for i in ctx.CHAR():
@@ -33,9 +36,13 @@ class VUQInterpreter(VUQListener):
     def exitFunc_block(self, ctx: VUQParser.Func_blockContext):
         print(f"Params List: {self.func_params}")
 
-        while self.var_dict[self.rule[0]] != int(self.rule[1]):
+        exec(textwrap.dedent(f"""
+        while not (self.var_dict[self.rule["fst"]]\
+                    {comparison_to_expression(self.rule["cmp"])}\
+                    int(self.rule["snd"])):
             for i in ctx.arith():
                 i.enterRule(self)
+        """))
 
     def enterArith(self, ctx: VUQParser.ArithContext):
         # Gets the func parameter matching the index of the number of commas
@@ -72,4 +79,34 @@ class VUQInterpreter(VUQListener):
             self.var_dict[k] = 0
 
         self.func_params.clear()
-        self.rule.clear()
+        self.rule = init_rule()
+
+
+def init_rule():
+    return {
+        "fst": 0,
+        "cmp": '',
+        "snd": 0
+    }
+
+
+# This is a mess, but I couldn't think right
+def comparison_to_expression(comp: VUQParser.CompareContext):
+    builder = []
+
+    if comp.LESS() is not None:
+        if comp.NOT() is not None:
+            builder.append('>')
+        else:
+            builder.append('<')
+    else:
+        if comp.NOT() is not None:
+            builder.append('!')
+
+    if comp.EQUALS() is not None:
+        if comp.LESS() is not None:
+            builder.append('=')
+        else:
+            builder.append('==')
+
+    return ''.join(builder)

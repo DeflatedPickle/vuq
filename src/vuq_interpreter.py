@@ -1,4 +1,4 @@
-from .gen.VUQListener import VUQListener
+from .gen.VUQListener import VUQListener, ParseTreeWalker
 from .gen.VUQParser import VUQParser
 
 
@@ -6,8 +6,13 @@ class VUQInterpreter(VUQListener):
     def __init__(self, string):
         print(f"Input: {string}")
 
+        # Not wiped between rules
         self.var_dict = {}
+
+        # Wiped between rules
         self.func_params = []
+        # TODO: Support different comparisons and multiple rules
+        self.rule = []
 
     def enterRule_block(self, ctx: VUQParser.Rule_blockContext):
         print(f"Rule Block: {ctx.getText()}")
@@ -16,29 +21,34 @@ class VUQInterpreter(VUQListener):
         name = ctx.obj.text
 
         if name not in self.var_dict:
-            # if ctx.value.INT().getText() is not None:
-            #     value = ctx.value.INT().getText()
-            # elif ctx.value.CHAR().getText() is not None:
-            #     value = self.var_dict[ctx.value.CHAR().getText()]
-
             self.var_dict[name] = 0
 
-    def enterFunc(self, ctx: VUQParser.FuncContext):
-        self.func_params.clear()
+        self.rule.append(name)
+        self.rule.append(int(ctx.value.getText()))
 
+    def enterFunc(self, ctx: VUQParser.FuncContext):
         for i in ctx.CHAR():
             self.func_params.append(i.getText())
 
-    def enterArith(self, ctx: VUQParser.ArithContext):
-        op = ctx.arithOp().getText()
+    def exitFunc_block(self, ctx: VUQParser.Func_blockContext):
+        print(f"Params List: {self.func_params}")
 
+        while self.var_dict[self.rule[0]] != int(self.rule[1]):
+            for i in ctx.arith():
+                i.enterRule(self)
+
+    def enterArith(self, ctx: VUQParser.ArithContext):
+        # Gets the func parameter matching the index of the number of commas
         first = self.func_params[str(ctx.first.getText()).count(",") - 1]
 
+        op = ctx.arithOp().getText()
+
         try:
+            # It's a normal number
             value = float(ctx.second.getText())
         except ValueError:
             s = ctx.second.getText()
-            
+
             if s in self.var_dict:
                 # It's a variable
                 value = self.var_dict[s]
@@ -57,4 +67,9 @@ class VUQInterpreter(VUQListener):
 
     def exitRule_block(self, ctx: VUQParser.Rule_blockContext):
         print(f"Variable Dict: {self.var_dict}")
-        print(f"Params List: {self.func_params}")
+
+        for k, v in self.var_dict.items():
+            self.var_dict[k] = 0
+
+        self.func_params.clear()
+        self.rule.clear()

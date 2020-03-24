@@ -8,7 +8,8 @@ rule_block: '[' rule_match '\\' func ']';
 rule_match: obj=CHAR compare value=param;
 // -g>
 // -i,g>
-func: '-' CHAR (',' CHAR)* '>' (arith SPACE?)* ('<' '-')?;
+func: '-' CHAR (',' CHAR)* '>' func_block ('<' '-')?;
+func_block: (arith SPACE?)*;
 // +
 // -
 // *

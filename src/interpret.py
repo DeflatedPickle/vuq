@@ -12,5 +12,4 @@ def interpret_file(string):
     tree = parser.start()
 
     listener = VUQInterpreter(string)
-    walker = antlr4.ParseTreeWalker()
-    walker.walk(listener, tree)
+    antlr4.ParseTreeWalker.DEFAULT.walk(listener, tree)

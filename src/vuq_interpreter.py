@@ -1,4 +1,5 @@
 import textwrap
+import itertools
 
 from .gen.VUQListener import VUQListener
 from .gen.VUQParser import VUQParser
@@ -6,7 +7,7 @@ from .gen.VUQParser import VUQParser
 
 class VUQInterpreter(VUQListener):
     def __init__(self, string):
-        print(f"Input: {string}")
+        # print(f"Input: {string}")
 
         # Not wiped between rules
         self.var_dict = {}
@@ -16,8 +17,8 @@ class VUQInterpreter(VUQListener):
         # TODO: Support different comparisons and multiple rules
         self.rule = init_rule()
 
-    def enterRule_block(self, ctx: VUQParser.Rule_blockContext):
-        print(f"Rule Block: {ctx.getText()}")
+    # def enterRule_block(self, ctx: VUQParser.Rule_blockContext):
+    #     print(f"Rule Block: {ctx.getText()}")
 
     def enterRule_match(self, ctx: VUQParser.Rule_matchContext):
         name = ctx.obj.text
@@ -27,26 +28,49 @@ class VUQInterpreter(VUQListener):
 
         self.rule["fst"] = name
         self.rule["cmp"] = ctx.compare()
-        self.rule["snd"] = int(ctx.value.getText())
+
+        value = ctx.value.getText()
+
+        try:
+            value = int(value)
+        except ValueError:
+            if value == '|':
+                value = input('> ')
+            else:
+                value = self.var_dict[value]
+
+        self.rule['snd'] = int(value)
 
     def enterFunc(self, ctx: VUQParser.FuncContext):
         for i in ctx.CHAR():
             self.func_params.append(i.getText())
 
     def exitFunc_block(self, ctx: VUQParser.Func_blockContext):
-        print(f"Params List: {self.func_params}")
+        # print(f"Params List: {self.func_params}")
+
+        lust = list(itertools.chain.from_iterable([ctx.arith(), ctx.imp(), ctx.output()]))
 
         exec(textwrap.dedent(f"""
         while not (self.var_dict[self.rule["fst"]]\
                     {comparison_to_expression(self.rule["cmp"])}\
                     int(self.rule["snd"])):
-            for i in ctx.arith():
+            for i in lust:
                 i.enterRule(self)
         """))
 
+    def enterOutput(self, ctx: VUQParser.OutputContext):
+        print(
+            self.var_dict[
+                self.func_params[
+                    str(ctx.var().getText()).count(',') - 1
+                    ]
+            ],
+            end='' if ctx.END_LINE() is None else '\n')
+
     def enterArith(self, ctx: VUQParser.ArithContext):
-        # Gets the func parameter matching the index of the number of commas
-        first = self.func_params[str(ctx.first.getText()).count(",") - 1]
+        first = self.func_params[
+            str(ctx.first.getText()).count(',') - 1
+            ]
 
         op = ctx.arithOp().getText()
 
@@ -61,19 +85,18 @@ class VUQInterpreter(VUQListener):
                 value = self.var_dict[s]
             elif s == len(s) * s[0]:
                 # It's all commas
-                value = float(self.var_dict[self.func_params[str(ctx.second.getText()).count(",") - 1]])
+                value = float(
+                    self.var_dict[
+                        self.func_params[
+                            str(ctx.second.getText()).count(',') - 1
+                            ]
+                    ]
+                )
 
-        if op == "+":
-            self.var_dict[first] = self.var_dict[first] + value
-        elif op == "-":
-            self.var_dict[first] = self.var_dict[first] - value
-        elif op == "*":
-            self.var_dict[first] = self.var_dict[first] * value
-        elif op == "/":
-            self.var_dict[first] = self.var_dict[first] / value
+        exec(f"self.var_dict[first] = {self.var_dict[first]} {op} {value}")
 
     def exitRule_block(self, ctx: VUQParser.Rule_blockContext):
-        print(f"Variable Dict: {self.var_dict}")
+        # print(f"Variable Dict: {self.var_dict}")
 
         for k, v in self.var_dict.items():
             self.var_dict[k] = 0
@@ -104,9 +127,10 @@ def comparison_to_expression(comp: VUQParser.CompareContext):
             builder.append('!')
 
     if comp.EQUALS() is not None:
-        if comp.LESS() is not None:
-            builder.append('=')
-        else:
-            builder.append('==')
+        builder.append('=')
 
+        if comp.LESS() is None:
+            builder.append('=')
+
+    # print(f"Comparison: {builder}")
     return ''.join(builder)

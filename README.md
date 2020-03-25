@@ -15,10 +15,13 @@ Parameters are referred to with commas, the amount matching their index.
 - ``` , ``` - A function parameter
 - ``` + - * / ``` - Arithmetic operators
 - ``` 1 2 3 4 5 6 7 8 9 ``` - Numeric numbers
+- ``` | ``` - Input
+- ``` & ``` - Output
 
 ### Quirks
-- Vuq, in it's limitless attempts to not use many characters or spaces, does not have `>`, you must instead use `!<`.
-- The function of a rule, and therefor a rule, will always return `true`, as it can't return until it has finished.
+- Vuq, in it's limitless attempts to not use many characters or spaces, does not have `>`, you must instead use `!<`
+- Some characters play multiple roles in different contexts
+- The function of a rule, and therefor a rule, will always return `true`, as it can't return until it has finished
 
 ### Factorial
 ```
@@ -46,8 +49,9 @@ Parameters are referred to with commas, the amount matching their index.
 ### Credits
 - [@DeflatedPickle](https://github.com/DeflatedPickle)
     - Wrote the ANTLR4 grammar
-    - Started writing demo's in Raku, Kotlin and Python
-    - Wrote the blown out factorial description, based on the example
+    - Started writing demo's in Raku, Kotlin
+    - Wrote the demo in Python
+    - Wrote the blown-out factorial description, based on the example
     - Made the choice decision to use multiple commas to refer to parameters
 - [@Gigabitten](https://github.com/Gigabitten)
     - Helped with the initial idea

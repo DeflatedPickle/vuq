@@ -25,9 +25,20 @@ class VUQInterpreter(VUQListener):
         if name not in self.var_dict:
             self.var_dict[name] = 0
 
-        self.rule["fst"] = name
-        self.rule["cmp"] = ctx.compare()
-        self.rule["snd"] = int(ctx.value.getText())
+        self.rule['fst'] = name
+        self.rule['cmp'] = ctx.compare()
+
+        value = ctx.value.getText()
+
+        try:
+            value = value
+        except ValueError:
+            if value == '|':
+                value = input('> ')
+            else:
+                value = self.var_dict[value]
+
+        self.rule['snd'] = int(value)
 
     def enterFunc(self, ctx: VUQParser.FuncContext):
         for i in ctx.CHAR():
@@ -37,16 +48,30 @@ class VUQInterpreter(VUQListener):
         print(f"Params List: {self.func_params}")
 
         exec(textwrap.dedent(f"""
-        while not (self.var_dict[self.rule["fst"]]\
-                    {comparison_to_expression(self.rule["cmp"])}\
-                    int(self.rule["snd"])):
-            for i in ctx.arith():
+        while not ({self.var_dict[self.rule['fst']]}\
+                    {comparison_to_expression(self.rule['cmp'])}\
+                    {int(self.rule['snd'])}):
+            for i in ctx.expression():
                 i.enterRule(self)
         """))
 
+    def enterOutput(self, ctx: VUQParser.OutputContext):
+        print(
+            self.var_dict[
+                self.func_params[
+                    str(ctx.var().getText()).count(',') - 1
+                    ]
+            ],
+            end=print('' if ctx.END_LINE() is None else '\n'))
+
+    # def enterExpression(self, ctx:VUQParser.ExpressionContext):
+    #     print(comparison_to_expression(self.rule['cmp']), self.var_dict, self.func_params)
+
     def enterArith(self, ctx: VUQParser.ArithContext):
         # Gets the func parameter matching the index of the number of commas
-        first = self.func_params[str(ctx.first.getText()).count(",") - 1]
+        first = self.func_params[
+            str(ctx.first.getText()).count(',') - 1
+            ]
 
         op = ctx.arithOp().getText()
 
@@ -61,16 +86,15 @@ class VUQInterpreter(VUQListener):
                 value = self.var_dict[s]
             elif s == len(s) * s[0]:
                 # It's all commas
-                value = float(self.var_dict[self.func_params[str(ctx.second.getText()).count(",") - 1]])
+                value = float(
+                    self.var_dict[
+                        self.func_params[
+                            str(ctx.second.getText()).count(',') - 1
+                            ]
+                    ]
+                )
 
-        if op == "+":
-            self.var_dict[first] = self.var_dict[first] + value
-        elif op == "-":
-            self.var_dict[first] = self.var_dict[first] - value
-        elif op == "*":
-            self.var_dict[first] = self.var_dict[first] * value
-        elif op == "/":
-            self.var_dict[first] = self.var_dict[first] / value
+        exec(f"self.var_dict[first] = {self.var_dict[first]} {op} {value}")
 
     def exitRule_block(self, ctx: VUQParser.Rule_blockContext):
         print(f"Variable Dict: {self.var_dict}")
@@ -84,9 +108,9 @@ class VUQInterpreter(VUQListener):
 
 def init_rule():
     return {
-        "fst": 0,
-        "cmp": '',
-        "snd": 0
+        'fst': 0,
+        'cmp': '',
+        'snd': 0
     }
 
 
@@ -104,9 +128,10 @@ def comparison_to_expression(comp: VUQParser.CompareContext):
             builder.append('!')
 
     if comp.EQUALS() is not None:
-        if comp.LESS() is not None:
-            builder.append('=')
-        else:
-            builder.append('==')
+        builder.append('=')
 
+        if comp.LESS() is None:
+            builder.append('=')
+
+    print(f"Comparison: {builder}")
     return ''.join(builder)

@@ -1,0 +1,11 @@
+`Bug: Skips 98
+
+`Credit: @DeflatedPickle
+[
+    b:99<=0
+    \
+    -b>
+        &,\
+        _
+        ,-1
+]

@@ -23,8 +23,12 @@ class VUQInterpreter(VUQListener):
     def enterRule_match(self, ctx: VUQParser.Rule_matchContext):
         name = ctx.obj.text
 
+        init_val = 0
+        if ctx.innit() is not None:
+            init_val = ctx.innit().getText()
+
         if name not in self.var_dict:
-            self.var_dict[name] = 0
+            self.var_dict[name] = int(init_val)
 
         self.rule["fst"] = name
         self.rule["cmp"] = ctx.compare()
@@ -35,7 +39,7 @@ class VUQInterpreter(VUQListener):
             value = int(value)
         except ValueError:
             if value == '|':
-                value = input('> ')
+                value = input(f"{name}> ")
             else:
                 value = self.var_dict[value]
 

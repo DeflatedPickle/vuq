@@ -5,7 +5,8 @@ start: rule_block*;
 // [ ]
 rule_block: '[' rule_match END_LINE func ']';
 // g=1
-rule_match: obj=CHAR compare value=param;
+rule_match: obj=CHAR (':' innit)? compare value=param;
+
 // -g>
 // -i,g>
 func: '-' CHAR (',' CHAR)* '>' func_block ('<' '-')?;
@@ -31,7 +32,9 @@ compare: NOT? LESS? EQUALS? /* (boolOp compare)? */;
 arithOp: arg=(PLUS | MINUS | MULTIPLY | DIVIDE);
 
 var: ','+;
-param: INT | CHAR | var | imp;
+// Python won't let use have int, so it's innit
+innit: MINUS? INT;
+param: innit | CHAR | var | imp;
 
 COMMENT: GRAVE ~[\r\n]* -> skip;
 fragment GRAVE: '`';
